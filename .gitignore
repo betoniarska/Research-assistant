@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual env
+venv/
+.venv/
+
+# Secrets
+.env
+
+# FAISS storage
+storage/
+
+# macOS
+.DS_Store

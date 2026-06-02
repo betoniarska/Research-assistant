@@ -41,9 +41,7 @@ def build_prompt(query, results):
 
 
 
-def ask_llm(query, model, index, chunks):
-
-    results = search(query, model, index, chunks, k=5)
+def ask_llm(query, results):
 
     prompt = build_prompt(query, results)
 
@@ -55,5 +53,4 @@ def ask_llm(query, model, index, chunks):
         temperature=0.2
     )
 
-    answer = response.choices[0].message.content
-    return answer, results
+    return response.choices[0].message.content, results

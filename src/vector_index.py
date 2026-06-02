@@ -1,33 +1,39 @@
 # create embeddings for chunks using sentence transformers
 import faiss
-from sentence_transformers import SentenceTransformer
+#from sentence_transformers import SentenceTransformer
 import numpy as np
+from src.services.embedding_service import embedding_service
 
 def create_index(chunks):
 
-    model = SentenceTransformer("all-MiniLM-L6-v2")
     texts = [c["text"] for c in chunks]
 
-    embeddings = np.array(model.encode(texts, show_progress_bar=True)).astype("float32")
+    embeddings = embedding_service.encode(texts)
+
+    embeddings = np.array(
+        embeddings
+    ).astype("float32")
 
     dim = embeddings.shape[1]
 
     index = faiss.IndexFlatL2(dim)
+
     index.add(embeddings)
 
-    print("Total vectors:", index.ntotal)
-
-    return index, model
+    return index
 
 
-def search(query, model, index, chunks, k=5):
+def search(query, index, chunks, k=5):
 
-    query_vec = model.encode([query]).astype("float32")
-    
-    distances, indices = index.search(query_vec, k)
-    
-    results = []
-    for i in indices[0]:
-        results.append(chunks[i])
-    
-    return results
+    query_vec = embedding_service.encode([query])
+
+    query_vec = np.array(
+        query_vec
+    ).astype("float32")
+
+    distances, indices = index.search(
+        query_vec,
+        k
+    )
+
+    return [chunks[i] for i in indices[0]]

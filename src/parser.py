@@ -1,12 +1,9 @@
-
-
-
 from bs4 import BeautifulSoup
-
-sections = []
 
 # parse xml and extract sections
 def parse_xml(soup):
+
+    sections = []
 
     for div in soup.find_all("div"):
         head = div.find("head")
@@ -28,15 +25,21 @@ def chunk_text(text, size=800):
 
 # chunk sections and add paper title for context
 def chunk(sections, title):
+
     chunks = []
+
+    # added a unique ID to each chunk for better traceability and to avoid duplicates in the index
+    chunk_id = 0
 
     for sec in sections:
         for chunk in chunk_text(sec["text"]):
             chunks.append({
+                "id": chunk_id,
                 "text": chunk,
                 "section": sec["title"],
                 "paper_title": title
             })
+            chunk_id += 1
 
     return chunks
 
