@@ -1,5 +1,4 @@
 from openai import OpenAI
-from src.vector_index import search
 from dotenv import load_dotenv
 import os
 

@@ -36,7 +36,7 @@ def query_rag(question, store):
 
     store.load()
 
-    results = store.search(question, k=5)
+    results = store.search(question, k=15)
 
     answer, _ = ask_llm(question, results)
 

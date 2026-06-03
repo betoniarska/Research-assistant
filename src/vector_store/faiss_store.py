@@ -2,7 +2,6 @@ import faiss
 import numpy as np
 import json
 import os
-
 from src.services.embedding_service import embedding_service
 
 
@@ -36,7 +35,10 @@ class FAISSStore:
         dim = embeddings.shape[1]
 
         # Flat index = brute-force exact search
-        self.index = faiss.IndexFlatL2(dim)
+
+        faiss.normalize_L2(embeddings) # normalize for cosine similarity
+        self.index = faiss.IndexFlatIP(dim) # inner product for cosine similarity
+
 
         self.index.add(embeddings)
 
@@ -60,30 +62,33 @@ class FAISSStore:
 
         # Load FAISS + metadata from disk
 
-        print("📦 Loading FAISS index from disk...")
-
 
         self.index = faiss.read_index(self.index_path)
 
         with open(self.meta_path, "r") as f:
             self.chunks = json.load(f)
 
-        print("✅ FAISS loaded into memory")
 
         return self.index, self.chunks
     
 
-    def search(self, query, k=5):
+    def search(self, query, k=15):
 
         query_vec = embedding_service.encode([query])
 
         query_vec = np.array(query_vec).astype("float32")
 
-        distances, indices = self.index.search(query_vec, k)
+        faiss.normalize_L2(query_vec) # normalize for cosine similarity aswell
+
+        scores, indices = self.index.search(query_vec, k)
 
         # deduplicate results (in case of identical sections) while preserving order
         seen = set()
         results = []
+
+        # print scores with section titles for debugging
+        for score, idx in zip(scores[0], indices[0]):
+            print(f"{score:.4f} | {self.chunks[idx]['section']}")
 
         for i in indices[0]:
 

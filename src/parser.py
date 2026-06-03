@@ -18,10 +18,25 @@ def parse_xml(soup):
     return sections
 
 
-# chunk sections into smaller pieces for better processing by language models
-def chunk_text(text, size=800):
+# chunk text into smaller pieces for better embedding and retrieval (with overlap to preserve context)
+def chunk_text(text, size=400, overlap=100):
+
     words = text.split()
-    return [" ".join(words[i:i+size]) for i in range(0, len(words), size)]
+    chunks = []
+    start = 0
+
+    while start < len(words):
+
+        end = start + size
+
+        chunks.append(
+            " ".join(words[start:end])
+        )
+
+        start += size - overlap
+
+    return chunks
+
 
 # chunk sections and add paper title for context
 def chunk(sections, title):
@@ -40,6 +55,22 @@ def chunk(sections, title):
                 "paper_title": title
             })
             chunk_id += 1
+
+    # evaluate number of sections and chunks for debugging
+    print("Sections:", len(sections))
+    print("Chunks:", len(chunks))
+
+    for c in chunks:
+        if c["section"] == "Input-Input Layer5":
+            print(c)
+        else:
+            print("no such section: Input-Input Layer5")
+
+    # print first 20 chunks for debugging
+    for c in chunks[:20]:
+        print()
+        print(c["section"])
+        print(c["text"][:200])
 
     return chunks
 
