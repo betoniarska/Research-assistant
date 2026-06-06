@@ -1,5 +1,9 @@
 from bs4 import BeautifulSoup
 
+import uuid
+
+
+
 # parse xml and extract sections
 def parse_xml(soup):
 
@@ -42,19 +46,21 @@ def chunk_text(text, size=400, overlap=100):
 def chunk(sections, title):
 
     chunks = []
+    paper_id = str(uuid.uuid4()) # generate a unique ID for the paper to link all chunks together
 
     # added a unique ID to each chunk for better traceability and to avoid duplicates in the index
-    chunk_id = 0
 
     for sec in sections:
         for chunk in chunk_text(sec["text"]):
             chunks.append({
-                "id": chunk_id,
-                "text": chunk,
-                "section": sec["title"],
-                "paper_title": title
+                "id": str(uuid.uuid4()), # unique ID for the chunk
+                "paper_id": paper_id, # link to the original paper
+                "paper_title": title, 
+                "section": sec["title"], 
+                "text": chunk
             })
-            chunk_id += 1
+
+            
 
     # evaluate number of sections and chunks for debugging
     print("Sections:", len(sections))

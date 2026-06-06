@@ -20,32 +20,28 @@ class FAISSStore:
 
 
 
-    def build(self, chunks):
-
-
-        # Create FAISS index from scratch
-
+    def add(self, chunks):
 
         texts = [c["text"] for c in chunks]
 
         embeddings = embedding_service.encode(texts)
 
-        embeddings = np.array(embeddings).astype("float32")
+        embeddings = np.array(
+            embeddings
+        ).astype("float32")
 
-        dim = embeddings.shape[1]
+        faiss.normalize_L2(embeddings)
 
-        # Flat index = brute-force exact search
+        if self.index is None:
 
-        faiss.normalize_L2(embeddings) # normalize for cosine similarity
-        self.index = faiss.IndexFlatIP(dim) # inner product for cosine similarity
-
+            dim = embeddings.shape[1]
+            self.index = faiss.IndexFlatIP(dim)
+            self.chunks = []
 
         self.index.add(embeddings)
 
-        self.chunks = chunks
-
-        return self.index
-    
+        self.chunks.extend(chunks)
+        
     def save(self):
         
         # Persist FAISS + metadata
@@ -90,6 +86,7 @@ class FAISSStore:
         for score, idx in zip(scores[0], indices[0]):
             print(f"{score:.4f} | {self.chunks[idx]['section']}")
 
+        # retrieve corresponding chunks for results
         for i in indices[0]:
 
             chunk = self.chunks[i]

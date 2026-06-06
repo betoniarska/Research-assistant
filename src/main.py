@@ -1,64 +1,34 @@
 import os
-from bs4 import BeautifulSoup
 
-from src.loader import pdf_loader
-from src.parser import parse_xml, chunk
+from src.ingest import ingest_pdf
+from src.query import query_rag
 from src.vector_store.faiss_store import FAISSStore
-from src.prompt import ask_llm
 
 
-file_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../data/attention_is.pdf")
-)
-
-
-
-def ingest_pdf(file_path, store):
-
-    xml = pdf_loader(file_path)
-
-    soup = BeautifulSoup(xml, "lxml-xml")
-
-    title = soup.find("title").text
-
-    sections = parse_xml(soup)
-
-    chunks = chunk(sections, title)
-
-    index = store.build(chunks)
-
-    store.save()
-
-    print(f"Indexed paper: {title}")
-
-
-def query_rag(question, store):
-
-    store.load()
-
-    results = store.search(question, k=15)
-
-    answer, _ = ask_llm(question, results)
-
-    return answer, results
-
+DATA_DIR = "data"
 
 
 if __name__ == "__main__":
 
     store = FAISSStore()
 
+    # Ingest every pdf
 
-    ingest_pdf(file_path, store)
+    for file in os.listdir(DATA_DIR):
 
-    query = "Simply list the main keywords of the paper in a bullet point list"
+        if file.endswith(".pdf"):
+
+            path = os.path.join(DATA_DIR, file)
+
+            ingest_pdf(path, store)
+
+    store.save()
+
+    # Ask question
+
+    query = input("\nQuestion: ")
 
     answer, sources = query_rag(query, store)
 
-    print("\nQUESTION:\n", query)
-    print("\nANSWER:\n", answer)
-
-    for s in sources:
-        print("\n---")
-        print(s["section"])
-        print(s["text"][:300])
+    print("\nAnswer:\n")
+    print(answer)
