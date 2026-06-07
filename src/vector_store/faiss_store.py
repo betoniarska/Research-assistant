@@ -22,6 +22,14 @@ class FAISSStore:
 
     def add(self, chunks):
 
+        # Check if paper is already indexed to avoid duplicates (based on paper_id)
+
+        if self.chunks:
+            existing_ids = {c["paper_id"] for c in self.chunks}
+            if chunks[0]["paper_id"] in existing_ids:
+                print(f"Already indexed: {chunks[0]['paper_title']}, skipping.")
+                return
+
         texts = [c["text"] for c in chunks]
 
         embeddings = embedding_service.encode(texts)

@@ -1,26 +1,17 @@
+# query.py
+
 from src.prompt import ask_llm
 
 
 def query_rag(question, store):
 
-    store.load()
+    # Load index and metadata, then search for relevant chunks
 
-    #results = store.search(question, k=10)
+    store.load()
 
     results = store.search(question, k=30)
 
-    # group by paper
-    papers = {}
-
-    for r in results:
-        papers.setdefault(r["paper_id"], []).append(r)
-
-    # take top 5 from each paper
-    final = []
-
-    for paper in papers.values():
-        final.extend(paper[:5])
-
-
+    # Filter results by a similarity threshold and limit to top 10
+    final = [r for r in results if r["score"] > 0.13][:10]
 
     return ask_llm(question, final)
