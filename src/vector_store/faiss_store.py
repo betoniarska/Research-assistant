@@ -87,14 +87,18 @@ class FAISSStore:
             print(f"{score:.4f} | {self.chunks[idx]['section']}")
 
         # retrieve corresponding chunks for results
-        for i in indices[0]:
+        for score, idx in zip(scores[0], indices[0]):
 
-            chunk = self.chunks[i]
+            chunk = self.chunks[idx]
 
             if chunk["id"] in seen:
                 continue
 
             seen.add(chunk["id"])
-            results.append(chunk)
+
+            result = chunk.copy()
+            result["score"] = float(score)
+
+            results.append(result)
 
         return results

@@ -16,18 +16,28 @@ os.environ["OPENAI_API_KEY"] = key
 
 def build_prompt(query, results):
     context = "\n\n".join([
-        f"[Section: {r['section']}]\n{r['text']}"
+        f"""[Paper: {r['paper_title']}]
+    [Section: {r['section']}]
+    [Similarity: {r['score']:.3f}]
+
+    {r['text']}"""
         for r in results
     ])
 
     return f"""
     You are an expert research assistant.
 
-    Use ONLY the provided context to answer.
+    Answer ONLY from the provided context.
 
-    - Be precise
-    - Cite sections when possible
-    - If unsure, say you don't know
+    The retrieved passages include:
+    - the source paper,
+    - the section title,
+    - a retrieval similarity score.
+
+    If multiple papers discuss the same concept,
+    clearly distinguish which paper each statement comes from.
+
+    If the answer cannot be determined from the context, say so.
 
     Context:
     {context}
@@ -35,7 +45,7 @@ def build_prompt(query, results):
     Question:
     {query}
 
-    Answer (with reasoning):
+    Answer:
     """
 
 
