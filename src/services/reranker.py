@@ -5,7 +5,7 @@ class Reranker:
         self.model = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
     def rerank(self, query, chunks):
-        pairs = [(query, c["text"]) for c in chunks]
+        pairs = [(query, f"{c['paper_title']}: {c['text']}") for c in chunks]
 
         scores = self.model.predict(pairs)
 

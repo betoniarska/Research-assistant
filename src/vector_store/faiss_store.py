@@ -1,3 +1,6 @@
+# FAISS-based vector store for paper chunks with metadata management and balanced retrieval.
+
+from collections import defaultdict
 import faiss
 import numpy as np
 import json
@@ -108,5 +111,45 @@ class FAISSStore:
             result["score"] = float(score)
 
             results.append(result)
+
+        return results
+    
+
+    def search_balanced(self, query, k_per_paper=20):
+
+        """Retrieve top-k candidates per paper independently."""
+        
+        query_vec = np.array(embedding_service.encode([query])).astype("float32")
+        faiss.normalize_L2(query_vec)
+
+        # Group chunk indices by paper
+        paper_indices = defaultdict(list)
+        for idx, chunk in enumerate(self.chunks):
+            paper_indices[chunk["paper_id"]].append(idx)
+
+        results = []
+        seen = set()
+
+        for paper_id, indices in paper_indices.items():
+            
+            # Build a temporary index for this paper's chunks
+            sub_chunks = [self.chunks[i] for i in indices]
+            sub_texts = [c["text"] for c in sub_chunks]
+            sub_vecs = np.array(embedding_service.encode(sub_texts)).astype("float32")
+            faiss.normalize_L2(sub_vecs)
+
+            sub_index = faiss.IndexFlatIP(sub_vecs.shape[1])
+            sub_index.add(sub_vecs)
+
+            k = min(k_per_paper, len(sub_chunks))
+            scores, local_indices = sub_index.search(query_vec, k)
+
+            for score, local_idx in zip(scores[0], local_indices[0]):
+                chunk = sub_chunks[local_idx]
+                if chunk["id"] not in seen:
+                    seen.add(chunk["id"])
+                    r = chunk.copy()
+                    r["score"] = float(score)
+                    results.append(r)
 
         return results
