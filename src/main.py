@@ -1,3 +1,5 @@
+# main.py
+
 import os
 
 from src.ingest import ingest_pdf
@@ -14,21 +16,36 @@ if __name__ == "__main__":
 
     # Ingest every pdf
 
-    for file in os.listdir(DATA_DIR):
+    if store.index_exists():
+        store.load()
+    else:
 
-        if file.endswith(".pdf"):
+        for file in os.listdir(DATA_DIR):
 
-            path = os.path.join(DATA_DIR, file)
+            if file.endswith(".pdf"):
 
-            ingest_pdf(path, store)
+                path = os.path.join(DATA_DIR, file)
 
-    store.save()
+                ingest_pdf(path, store)
 
-    # Ask question
+        store.save()
 
-    query = input("\nQuestion: ")
+    history = []
 
-    answer, sources = query_rag(query, store)
+    # interactive loop to ask multiple questions while keeping the conversation history
+    while True:
 
-    print("\nAnswer:\n")
-    print(answer)
+        query = input("\nQuestion (or 'exit'): ").strip()
+
+        if query.lower() == "exit":
+            break
+
+
+        answer, sources = query_rag(query, store, history)
+        print(f"\nAnswer:\n{answer}")
+        
+        history.append({"role": "user", "content": query})
+        history.append({"role": "assistant", "content": answer})
+
+
+        

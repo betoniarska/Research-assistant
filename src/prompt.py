@@ -49,16 +49,15 @@ def build_prompt(query, results):
     """
 
 
+def ask_llm(query, results, history=None):
 
-def ask_llm(query, results):
 
     prompt = build_prompt(query, results)
-
+    messages = (history or []) + [{"role": "user", "content": prompt}]
+    
     response = client.chat.completions.create(
         model="gpt-4.1-mini",
-        messages=[
-            {"role": "user", "content": prompt}
-        ],
+        messages=messages,
         temperature=0.2
     )
 

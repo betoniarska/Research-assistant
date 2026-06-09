@@ -6,9 +6,11 @@ from collections import defaultdict
 
 reranker = Reranker()
 
-def query_rag(question, store):
+# note to self: currently retrieval unaware of history, but could be extended to do relevance feedback or conversational retrieval techniques in the future
 
-    store.load()
+def query_rag(question, store, history=None):
+
+    # store.load()
 
     # recall stage (FAISS)
     candidates = store.search_balanced(question, k_per_paper=20)
@@ -21,9 +23,7 @@ def query_rag(question, store):
     # balance results across papers to get a more diverse set of sources
     final = select_balanced(reranked, top_k=10, per_paper=5)
 
-    return ask_llm(question, final)
-
-
+    return ask_llm(question, final, history)
 
 
 def select_balanced(reranked, top_k=10, per_paper=5):

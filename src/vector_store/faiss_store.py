@@ -115,9 +115,8 @@ class FAISSStore:
         return results
     
 
+    # Balanced retrieval: get top-k candidates per paper independently to ensure diversity of sources in the recall stage before reranking
     def search_balanced(self, query, k_per_paper=20):
-
-        """Retrieve top-k candidates per paper independently."""
         
         query_vec = np.array(embedding_service.encode([query])).astype("float32")
         faiss.normalize_L2(query_vec)
@@ -131,7 +130,7 @@ class FAISSStore:
         seen = set()
 
         for paper_id, indices in paper_indices.items():
-            
+
             # Build a temporary index for this paper's chunks
             sub_chunks = [self.chunks[i] for i in indices]
             sub_texts = [c["text"] for c in sub_chunks]
@@ -153,3 +152,6 @@ class FAISSStore:
                     results.append(r)
 
         return results
+    
+    def index_exists(self):
+        return os.path.exists(self.index_path) and os.path.exists(self.meta_path)
