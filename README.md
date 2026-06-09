@@ -23,3 +23,13 @@ Generation
 Retrieved chunks are passed to an LLM with a prompt that instructs it to distinguish between sources and stay grounded in context. 
 Conversation history is maintained across turns so follow-up questions work naturally.
 
+
+
+Roadmap (currently)
+
+ FastAPI backend with /ingest, /query, /papers endpoints
+ React frontend with chat interface and source panel
+ User PDF uploads
+ Docker Compose setup (GROBID + backend + frontend)
+ VPS deployment with nginx and persistent volumes (FAISS)
+ Query rewriting with history for better retrieval on follow-up questions (?)
