@@ -1,4 +1,4 @@
-# main.py
+# main.py (CLI entry point)
 
 import os
 
@@ -48,4 +48,3 @@ if __name__ == "__main__":
         history.append({"role": "assistant", "content": answer})
 
 
-        
