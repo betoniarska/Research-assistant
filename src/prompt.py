@@ -48,6 +48,7 @@ def build_prompt(query, results):
     Answer:
     """
 
+# only llm is aware of history for now
 
 def ask_llm(query, results, history=None):
 
